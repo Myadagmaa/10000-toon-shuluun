@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-р анги - Тоон шулуунаар аравт, зуут, мянгатыг эрэмбэлэх</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@600;800;900&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f4f9;
+        }
+        
+        .heading-font {
+            font-family: 'Comfortaa', cursive;
+        }
+
+        .number-card {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: grab;
+            user-select: none;
+        }
+
+        .number-card:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        .number-card:active {
+            cursor: grabbing;
+            transform: translateY(0) scale(0.96);
+        }
+
+        .drop-zone {
+            transition: all 0.25s ease;
+            border: 2px dashed #a5b4fc;
+        }
+
+        .drop-zone.hovered {
+            background-color: #e0e7ff;
+            border-color: #4f46e5;
+            transform: scale(1.05);
+        }
+
+        .drop-zone.filled {
+            border-style: solid;
+            border-color: #6366f1;
+            background-color: #ffffff;
+        }
+
+        /* Pulse highlight animation for tips */
+        @keyframes hintPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        .hint-pulse {
+            animation: hintPulse 0.8s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/20 p-2.5 rounded-2xl text-2xl">📏</div>
+                <div>
+                    <h1 class="heading-font text-xl md:text-2xl font-bold tracking-wide">Математик 3-р анги</h1>
+                    <p class="text-xs text-indigo-200">Тоон шулуунаар Аравт, Зуут, Мянгатыг эрэмбэлэх</p>
+                </div>
+            </div>
+            
+            <nav class="flex flex-wrap space-x-1 md:space-x-2 bg-indigo-800/40 p-1.5 rounded-2xl text-xs md:text-sm font-bold">
+                <button onclick="switchTab('plan')" id="tab-plan" class="px-3 py-2 rounded-xl transition bg-white text-indigo-700 shadow">
+                    📋 Хичээлийн төлөвлөгөө
+                </button>
+                <button onclick="switchTab('lab')" id="tab-lab" class="px-3 py-2 rounded-xl transition text-white hover:bg-white/10">
+                    🔬 Тоон шулууны лаборатори
+                </button>
+                <button onclick="switchTab('ordering')" id="tab-ordering" class="px-3 py-2 rounded-xl transition text-white hover:bg-white/10">
+                    📈 Тоон шулуунаар эрэмбэлэх
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-3 py-2 rounded-xl transition text-white hover:bg-white/10">
+                    🏆 Мэдлэгийн сорилт
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- TAB 1: LESSON PLAN -->
+        <section id="sec-plan" class="space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <span class="bg-indigo-100 text-indigo-700 text-2xl p-3 rounded-2xl font-bold">🎯</span>
+                    <div>
+                        <h2 class="heading-font text-2xl font-bold text-slate-800">Хичээлийн зорилго ба суралцахуйн үр дүн</h2>
+                        <p class="text-slate-500 text-sm">3-р анги | Нэгж хичээл: 10,000 хүртэлх тоо ба тоон шулуун</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100">
+                        <h3 class="font-bold text-indigo-900 mb-2 flex items-center">
+                            <i class="fa-solid fa-bullseye text-indigo-600 mr-2"></i> Суралцахуйн зорилго
+                        </h3>
+                        <p class="text-slate-700 text-sm leading-relaxed">
+                            Тоон шулуун дээр Мянгат (1000), Зуут (100), Аравт (10)-ын заалтуудыг танин мэдэж, өгөгдсөн 10,000 хүртэлх тоог тоон шулуун дээр зөв байрлуулан, <strong>өсөх (багаас их)</strong> ба <strong>буурах (ихээс бага)</strong> эрэмбээр эрэмбэлэх чадвар эзэмшинэ.
+                        </p>
+                    </div>
+                    <div class="bg-emerald-50/60 p-5 rounded-2xl border border-emerald-100">
+                        <h3 class="font-bold text-emerald-900 mb-2 flex items-center">
+                            <i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i> Хүрэх үр дүн
+                        </h3>
+                        <ul class="text-slate-700 text-sm space-y-1.5 list-disc list-inside">
+                            <li>Тоон шулуун дээрх мянгат, зуут, аравтын заалтын утгыг тодорхойлно.</li>
+                            <li>Өгөгдсөн тоо аль хоёр мянгат эсвэл зуутын хооронд байгааг заана.</li>
+                            <li>Тоон шулууны байршилд суурилан тоонуудыг өсөх болон буурах эрэмбээр алдаагүй жагсаана.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Structured Lesson Steps -->
+                <h3 class="heading-font text-xl font-bold text-slate-800 mb-4 flex items-center">
+                    <i class="fa-solid fa-chalkboard-user text-indigo-600 mr-2"></i> Хичээлийн 40 минутын интерактив явц
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <div class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-sm min-w-[70px] text-center">
+                            7 мин
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">1. Сэргээн санаж сэргээх (Тоон шулууны нууц)</h4>
+                            <p class="text-slate-600 text-sm mt-1">
+                                Багш тоон шулуун дээр $3000$ ба $4000$-ын голд ямар тоо байхыг асууна. ($3500$). 
+                                Тоон шулуун дээр **зүүнээс баруун тийш явахад тоо ТОМОРДОГ (өсдөг)**, **баруунаас зүүн тийш явахад БАГАСДАГ (буурдаг)** болохыг сануулна.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <div class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-sm min-w-[70px] text-center">
+                            10 мин
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">2. Лабораторитой ажиллах (Аравт, Зуут, Мянгатыг харах)</h4>
+                            <p class="text-slate-600 text-sm mt-1">
+                                Цэсний **"🔬 Тоон шулууны лаборатори"** рүү орж, $4680$ гэдэг тоог оруулж үзүүлнэ. Энэ тоо нь:
+                            </p>
+                            <ul class="text-xs text-slate-600 mt-1 space-y-1 list-disc list-inside pl-2">
+                                | Мянгатаар: **4000** ба **5000**-ын хооронд байна.
+                                | Зуутаар: **4600** ба **4700**-ын хооронд байна.
+                                | Аравтаар: Яг **4680** дээр тэмдэглэгдэнэ.
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <div class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-sm min-w-[70px] text-center">
+                            18 мин
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">3. Тоон шулуунаар эрэмбэлэх дадлага тоглоом</h4>
+                            <p class="text-slate-600 text-sm mt-1">
+                                Сурагчид **"📈 Тоон шулуунаар эрэмбэлэх"** хэсэгт орж, өгөгдсөн 4-5 тоог тоон шулуун дээр байрлуулан өсөх ба буурах дараалалд оруулна.
+                            </p>
+                            <span class="inline-block bg-amber-100 text-amber-900 text-xs px-3 py-1 rounded-lg font-semibold mt-2">
+                                💡 Дүрэм: Зүүнээс баруун уншвал ӨСӨХ ЭРЭМБЭ, баруунаас зүүн уншвал БУУРАХ ЭРЭМБЭ болно.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <div class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-sm min-w-[70px] text-center">
+                            5 мин
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">4. Баталгаажуулалт ба Сорилт</h4>
+                            <p class="text-slate-600 text-sm mt-1">
+                                **"🏆 Мэдлэгийн сорилт"** цэсээр орж 5 асуултад хариулан, амжилтаа шалгуулна.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: INTERACTIVE NUMBER LINE LAB -->
+        <section id="sec-lab" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div>
+                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-xl text-xs font-bold">🔬 ИНТЕРАКТИВ ЛАБОРАТОРИ</span>
+                        <h2 class="heading-font text-2xl font-bold text-slate-800 mt-1">Тоон шулуун ба Оронгийн утга</h2>
+                    </div>
+                    
+                    <!-- Search input to pinpoint on line -->
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="lab-input" min="0" max="10000" placeholder="Тоо оруул (жишээ: 4650)" class="px-4 py-2 border-2 border-indigo-200 rounded-xl focus:outline-none focus:border-indigo-600 font-bold text-slate-700 text-sm w-48 md:w-60">
+                        <button onclick="pinpointLabNumber()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl transition text-sm">
+                            🔍 Харах
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Range Selector Scale -->
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100 p-3 rounded-2xl text-xs font-bold text-slate-600 mb-6">
+                    <span>Тоон шулууны интервал:</span>
+                    <div class="flex space-x-1">
+                        <button onclick="setLabScale(0, 10000)" class="lab-scale-btn px-3 py-1.5 rounded-xl bg-indigo-600 text-white">0 - 10,000 (Мянгат)</button>
+                        <button onclick="setLabScale(2000, 3000)" class="lab-scale-btn px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-200">2000 - 3000 (Зуут)</button>
+                        <button onclick="setLabScale(4500, 4600)" class="lab-scale-btn px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-200">4500 - 4600 (Аравт)</button>
+                    </div>
+                </div>
+
+                <!-- Canvas Visualizer Container -->
+                <div class="relative bg-indigo-950/5 p-4 rounded-3xl border border-indigo-100 overflow-x-auto">
+                    <div class="min-w-[650px]">
+                        <canvas id="labCanvas" width="900" height="220" class="w-full h-auto block rounded-2xl bg-white shadow-inner"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown Box -->
+                <div id="lab-info-box" class="mt-6 grid sm:grid-cols-3 gap-4">
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                        <div class="text-xs text-indigo-500 font-bold">1. МЯНГАТЫН БҮС</div>
+                        <div id="info-myang" class="text-base font-extrabold text-indigo-900 mt-1">4000 ба 5000-ын хооронд</div>
+                        <p class="text-xs text-slate-500 mt-1">Мянгатын заалтаар хаана байрлахыг заана.</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                        <div class="text-xs text-emerald-500 font-bold">2. ЗУУТЫН БҮС</div>
+                        <div id="info-zuut" class="text-base font-extrabold text-emerald-900 mt-1">4600 ба 4700-ын хооронд</div>
+                        <p class="text-xs text-slate-500 mt-1">Зуутын заалтаар хамгийн ойр зуутууд.</p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                        <div class="text-xs text-amber-600 font-bold">3. АРАВТЫН ЗААЛТ</div>
+                        <div id="info-arav" class="text-base font-extrabold text-amber-900 mt-1">4650 дээр яг байна</div>
+                        <p class="text-xs text-slate-500 mt-1">Аравтын тусгаарлагчийн яг байршил.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: ORDERING GAME WITH NUMBER LINE -->
+        <section id="sec-ordering" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div>
+                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-xl text-xs font-bold">📈 ДАДЛАГА ТОГЛООМ</span>
+                        <h2 class="heading-font text-2xl font-bold text-slate-800 mt-1">Тоон шулуунд байрлуулан эрэмбэлэх</h2>
+                    </div>
+
+                    <!-- Mode Toggle -->
+                    <div class="flex bg-slate-100 p-1.5 rounded-2xl text-xs font-bold">
+                        <button onclick="setOrderMode('asc')" id="btn-mode-asc" class="px-4 py-2 rounded-xl bg-indigo-600 text-white shadow">
+                            📈 Өсөх эрэмбэ (Багаас нь их)
+                        </button>
+                        <button onclick="setOrderMode('desc')" id="btn-mode-desc" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200">
+                            📉 Буурах эрэмбэ (Ихээс нь бага)
+                        </button>
+                    </div>
+                </div>
+
+                <p id="ordering-instruction" class="text-slate-600 text-sm mb-6">
+                    Доорх 5 тоог тоон шулууны тохирох нүднүүдэд чирж эсвэл даран байрлуулж, <strong>зүүнээс баруун тийш өсөх</strong> эрэмбээр жагсаагаарай!
+                </p>
+
+                <!-- Interactive Canvas Line for Game -->
+                <div class="bg-indigo-950/5 p-4 rounded-3xl border border-indigo-100 mb-6 overflow-x-auto">
+                    <div class="min-w-[700px]">
+                        <canvas id="gameCanvas" width="900" height="150" class="w-full h-auto block rounded-2xl bg-white shadow-inner"></canvas>
+                    </div>
+                </div>
+
+                <!-- Drop Target Slots representing relative positions -->
+                <div class="mb-6">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Тоон шулууны дагуу эрэмбэлэгдэх байрлалууд</p>
+                    <div id="game-slots" class="flex flex-wrap justify-center gap-2 md:gap-3">
+                        <!-- Dynamic Slots generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Available Cards to place -->
+                <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200 mb-6">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Сонгох тоонууд (Дээр нь дарж эсвэл чирж байрлуулна уу)</p>
+                    <div id="game-cards" class="flex flex-wrap justify-center gap-3 min-h-[60px]">
+                        <!-- Dynamic Cards generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Controls & Result Feedback -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <button onclick="showOrderHint()" class="text-amber-700 hover:bg-amber-50 px-4 py-2 rounded-xl text-sm font-bold flex items-center border border-amber-200 transition">
+                        💡 Тоон шулууны сануулга
+                    </button>
+
+                    <div class="space-x-2">
+                        <button onclick="resetOrderingGame()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2.5 rounded-xl transition text-sm">
+                            🔄 Шинэ тоонууд
+                        </button>
+                        <button onclick="checkOrderingAnswer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-7 py-2.5 rounded-xl shadow-lg shadow-indigo-200 transition text-sm">
+                            ✅ Шалгах
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback & Hint display -->
+                <div id="game-feedback" class="mt-6 hidden p-4 rounded-2xl text-center font-bold text-base"></div>
+                <div id="game-hint-box" class="mt-4 hidden p-4 bg-amber-50 border border-amber-200 rounded-2xl text-slate-700 text-xs"></div>
+            </div>
+        </section>
+
+        <!-- TAB 4: QUIZ CHALLENGE -->
+        <section id="sec-quiz" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-xs font-bold">🏆 МЭДЛЭГИЙН СОРИЛТ</span>
+                        <h2 class="heading-font text-2xl font-bold text-slate-800 mt-1">Тоон шулууны мастер</h2>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 font-bold">ОНОО</span>
+                        <div id="quiz-score" class="text-2xl font-black text-indigo-600">0 / 5</div>
+                    </div>
+                </div>
+
+                <div id="quiz-body">
+                    <!-- Dynamic Question Cards generated by JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        Математик 3-р анги | Тоон шулуунаар Аравт, Зуут, Мянгатыг эрэмбэлэх интерактив сургалт
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Global App State
+        let currentTab = 'plan';
+        
+        // Lab visualizer state
+        let labScaleMin = 0;
+        let labScaleMax = 10000;
+        let labCurrentVal = 4650;
+
+        // Ordering Game State
+        let orderMode = 'asc'; // 'asc' or 'desc'
+        let gameNumbers = [];
+        let gameSelected = [];
+        let gameTargetOrder = [];
+
+        // Quiz State
+        let quizIndex = 0;
+        let quizScore = 0;
+        let quizQuestions = [];
+
+        // Helper: Generate structured 4-digit numbers around a benchmark
+        function generateGameNumbers() {
+            const baseThousand = (Math.floor(Math.random() * 7) + 1) * 1000; // e.g. 3000, 5000
+            let set = new Set();
+            while(set.size < 5) {
+                // Generate numbers close enough to compare tens/hundreds
+                let offset = (Math.floor(Math.random() * 90) + 5) * 10;
+                set.add(baseThousand + offset);
+            }
+            return Array.from(set);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            ['plan', 'lab', 'ordering', 'quiz'].forEach(t => {
+                const sec = document.getElementById(`sec-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    sec.classList.remove('hidden');
+                    btn.classList.add('bg-white', 'text-indigo-700', 'shadow');
+                    btn.classList.remove('text-white', 'hover:bg-white/10');
+                } else {
+                    sec.classList.add('hidden');
+                    btn.classList.remove('bg-white', 'text-indigo-700', 'shadow');
+                    btn.classList.add('text-white', 'hover:bg-white/10');
+                }
+            });
+
+            if (tab === 'lab') {
+                drawLabCanvas();
+            } else if (tab === 'ordering' && gameNumbers.length === 0) {
+                initOrderingGame();
+            } else if (tab === 'quiz' && quizQuestions.length === 0) {
+                initQuiz();
+            }
+        }
+
+        // --- LABORATORY CANVAS DRAWING ---
+        function setLabScale(min, max) {
+            labScaleMin = min;
+            labScaleMax = max;
+            
+            document.querySelectorAll('.lab-scale-btn').forEach(btn => {
+                if(btn.innerText.includes(`${min}`) || (min === 0 && btn.innerText.includes('10,000'))) {
+                    btn.className = 'lab-scale-btn px-3 py-1.5 rounded-xl bg-indigo-600 text-white';
+                } else {
+                    btn.className = 'lab-scale-btn px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-200';
+                }
+            });
+
+            // Adjust input value if out of scale bounds
+            if (labCurrentVal < min || labCurrentVal > max) {
+                labCurrentVal = Math.floor((min + max) / 2);
+                document.getElementById('lab-input').value = labCurrentVal;
+            }
+            drawLabCanvas();
+            updateLabInfo();
+        }
+
+        function pinpointLabNumber() {
+            const val = parseInt(document.getElementById('lab-input').value);
+            if (!isNaN(val) && val >= 0 && val <= 10000) {
+                labCurrentVal = val;
+                // Auto adjust scale range if needed
+                if (val < labScaleMin || val > labScaleMax) {
+                    if (val >= 2000 && val <= 3000) setLabScale(2000, 3000);
+                    else if (val >= 4500 && val <= 4600) setLabScale(4500, 4600);
+                    else setLabScale(0, 10000);
+                } else {
+                    drawLabCanvas();
+                    updateLabInfo();
+                }
+            }
+        }
+
+        function drawLabCanvas() {
+            const canvas = document.getElementById('labCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            ctx.clearRect(0, 0, W, H);
+
+            const padding = 60;
+            const lineY = H / 2 + 10;
+            const startX = padding;
+            const endX = W - padding;
+            const usableWidth = endX - startX;
+
+            // Main Line
+            ctx.beginPath();
+            ctx.moveTo(startX, lineY);
+            ctx.lineTo(endX, lineY);
+            ctx.strokeStyle = '#312e81';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Arrows at ends
+            ctx.fillStyle = '#312e81';
+            ctx.beginPath();
+            ctx.moveTo(startX - 10, lineY);
+            ctx.lineTo(startX, lineY - 8);
+            ctx.lineTo(startX, lineY + 8);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(endX + 10, lineY);
+            ctx.lineTo(endX, lineY - 8);
+            ctx.lineTo(endX, lineY + 8);
+            ctx.fill();
+
+            // Calculate Ticks
+            const range = labScaleMax - labScaleMin;
+            let step = 1000;
+            if (range <= 100) step = 10;
+            else if (range <= 1000) step = 100;
+
+            for (let v = labScaleMin; v <= labScaleMax; v += step) {
+                const ratio = (v - labScaleMin) / range;
+                const x = startX + ratio * usableWidth;
+
+                // Major Tick Line
+                ctx.beginPath();
+                ctx.moveTo(x, lineY - 15);
+                ctx.lineTo(x, lineY + 15);
+                ctx.strokeStyle = '#4338ca';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Value Label
+                ctx.fillStyle = '#1e1b4b';
+                ctx.font = 'bold 13px Nunito, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(v.toLocaleString(), x, lineY + 38);
+
+                // Minor Ticks (subdivisions)
+                const subStep = step / 5;
+                for (let sv = v + subStep; sv < v + step && sv < labScaleMax; sv += subStep) {
+                    const subRatio = (sv - labScaleMin) / range;
+                    const subX = startX + subRatio * usableWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(subX, lineY - 8);
+                    ctx.lineTo(subX, lineY + 8);
+                    ctx.strokeStyle = '#a5b4fc';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            // Pinpoint Pin for active value
+            if (labCurrentVal >= labScaleMin && labCurrentVal <= labScaleMax) {
+                const activeRatio = (labCurrentVal - labScaleMin) / range;
+                const activeX = startX + activeRatio * usableWidth;
+
+                // Pointer line
+                ctx.beginPath();
+                ctx.moveTo(activeX, lineY - 45);
+                ctx.lineTo(activeX, lineY - 5);
+                ctx.strokeStyle = '#e11d48';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([4, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Glowing pin circle
+                ctx.beginPath();
+                ctx.arc(activeX, lineY, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#e11d48';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Flag Banner
+                const flagW = 80;
+                const flagH = 32;
+                const flagX = Math.max(padding, Math.min(W - padding - flagW, activeX - flagW / 2));
+                const flagY = lineY - 75;
+
+                ctx.fillStyle = '#e11d48';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(flagX, flagY, flagW, flagH, 10);
+                else ctx.rect(flagX, flagY, flagW, flagH);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'extrabold 14px Nunito, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(labCurrentVal.toLocaleString(), flagX + flagW / 2, flagY + 21);
+            }
+        }
+
+        function updateLabInfo() {
+            const v = labCurrentVal;
+            const myangLower = Math.floor(v / 1000) * 1000;
+            const myangUpper = myangLower + 1000;
+
+            const zuutLower = Math.floor(v / 100) * 100;
+            const zuutUpper = zuutLower + 100;
+
+            document.getElementById('info-myang').innerText = `${myangLower.toLocaleString()} ба ${myangUpper.toLocaleString()}-ын хооронд`;
+            document.getElementById('info-zuut').innerText = `${zuutLower.toLocaleString()} ба ${zuutUpper.toLocaleString()}-ын хооронд`;
+            document.getElementById('info-arav').innerText = `Яг ${v.toLocaleString()} дээр байрлана`;
+        }
+
+        // --- ORDERING GAME LOGIC ---
+        function setOrderMode(mode) {
+            orderMode = mode;
+            const btnAsc = document.getElementById('btn-mode-asc');
+            const btnDesc = document.getElementById('btn-mode-desc');
+            const instr = document.getElementById('ordering-instruction');
+
+            if (mode === 'asc') {
+                btnAsc.className = 'px-4 py-2 rounded-xl bg-indigo-600 text-white shadow';
+                btnDesc.className = 'px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200';
+                instr.innerHTML = 'Доорх 5 тоог тоон шулууны тохирох нүднүүдэд байрлуулж, <strong>зүүнээс баруун тийш өсөх (багаас их)</strong> эрэмбээр жагсаагаарай!';
+            } else {
+                btnDesc.className = 'px-4 py-2 rounded-xl bg-rose-600 text-white shadow';
+                btnAsc.className = 'px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200';
+                instr.innerHTML = 'Доорх 5 тоог тоон шулууны тохирох нүднүүдэд байрлуулж, <strong>баруунаас зүүн тийш буурах (ихээс бага)</strong> эрэмбээр жагсаагаарай!';
+            }
+
+            initOrderingGame();
+        }
+
+        function initOrderingGame() {
+            gameNumbers = generateGameNumbers();
+            gameSelected = [];
+
+            // Sort target order based on mode
+            if (orderMode === 'asc') {
+                gameTargetOrder = [...gameNumbers].sort((a, b) => a - b);
+            } else {
+                gameTargetOrder = [...gameNumbers].sort((a, b) => b - a);
+            }
+
+            // Display cards shuffled
+            gameDisplayNumbers = [...gameNumbers].sort(() => Math.random() - 0.5);
+
+            document.getElementById('game-feedback').classList.add('hidden');
+            document.getElementById('game-hint-box').classList.add('hidden');
+
+            renderOrderingGame();
+            drawGameCanvas();
+        }
+
+        function drawGameCanvas() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            ctx.clearRect(0, 0, W, H);
+
+            const padding = 50;
+            const lineY = H / 2 + 10;
+            const startX = padding;
+            const endX = W - padding;
+
+            // Main Line
+            ctx.beginPath();
+            ctx.moveTo(startX, lineY);
+            ctx.lineTo(endX, lineY);
+            ctx.strokeStyle = orderMode === 'asc' ? '#4f46e5' : '#e11d48';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Arrow direction indicator
+            ctx.fillStyle = orderMode === 'asc' ? '#4f46e5' : '#e11d48';
+            if (orderMode === 'asc') {
+                ctx.beginPath();
+                ctx.moveTo(endX + 12, lineY);
+                ctx.lineTo(endX, lineY - 8);
+                ctx.lineTo(endX, lineY + 8);
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(startX - 12, lineY);
+                ctx.lineTo(startX, lineY - 8);
+                ctx.lineTo(startX, lineY + 8);
+                ctx.fill();
+            }
+
+            // Scale labels
+            const sortedMin = Math.min(...gameNumbers);
+            const sortedMax = Math.max(...gameNumbers);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 12px Nunito, sans-serif';
+            ctx.textAlign = 'center';
+
+            ctx.fillText(orderMode === 'asc' ? "← БАГА" : "← ИХ", startX, lineY + 35);
+            ctx.fillText(orderMode === 'asc' ? "ИХ →" : "БАГА →", endX, lineY + 35);
+
+            // Ticks for 5 relative slots
+            const stepWidth = (endX - startX) / 6;
+            for (let i = 1; i <= 5; i++) {
+                const x = startX + i * stepWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, lineY - 12);
+                ctx.lineTo(x, lineY + 12);
+                ctx.strokeStyle = '#a5b4fc';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillStyle = '#4338ca';
+                ctx.font = 'bold 13px Nunito, sans-serif';
+                ctx.fillText(`${i}-р байр`, x, lineY - 20);
+            }
+        }
+
+        function renderOrderingGame() {
+            const slotsContainer = document.getElementById('game-slots');
+            const cardsContainer = document.getElementById('game-cards');
+
+            // Render 5 Drop Slots
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const val = gameSelected[i];
+                const slotDiv = document.createElement('div');
+                slotDiv.className = `drop-zone w-28 h-20 md:w-32 md:h-22 rounded-2xl flex flex-col items-center justify-center font-extrabold text-base md:text-lg cursor-pointer ${val ? 'filled text-indigo-950 shadow-sm' : 'text-slate-300'}`;
+
+                if (val) {
+                    slotDiv.innerHTML = `
+                        <span class="text-indigo-900 font-extrabold">${val.toLocaleString()}</span>
+                        <span class="text-[10px] text-indigo-500 font-bold mt-1">${i + 1}-р заалт</span>
+                    `;
+                    slotDiv.onclick = () => removeGameSelected(i);
+                } else {
+                    slotDiv.innerHTML = `
+                        <span class="text-xs text-slate-400 font-bold">${i + 1}</span>
+                        <span class="text-[10px] text-slate-300">Хоосон</span>
+                    `;
+                }
+                slotsContainer.appendChild(slotDiv);
+            }
+
+            // Render Cards
+            cardsContainer.innerHTML = '';
+            gameDisplayNumbers.forEach((num) => {
+                const isUsed = gameSelected.includes(num);
+                if (!isUsed) {
+                    const cardBtn = document.createElement('button');
+                    cardBtn.className = `number-card bg-white border-2 border-indigo-200 hover:border-indigo-500 text-indigo-950 font-black text-lg px-5 py-3.5 rounded-2xl shadow-sm`;
+                    cardBtn.innerText = num.toLocaleString();
+                    cardBtn.onclick = () => selectGameNumber(num);
+                    cardsContainer.appendChild(cardBtn);
+                }
+            });
+        }
+
+        function selectGameNumber(num) {
+            if (gameSelected.length < 5) {
+                gameSelected.push(num);
+                renderOrderingGame();
+            }
+        }
+
+        function removeGameSelected(index) {
+            gameSelected.splice(index, 1);
+            renderOrderingGame();
+        }
+
+        function resetOrderingGame() {
+            initOrderingGame();
+        }
+
+        function checkOrderingAnswer() {
+            const feedback = document.getElementById('game-feedback');
+
+            if (gameSelected.length < 5) {
+                feedback.className = 'mt-6 p-4 rounded-2xl text-center font-bold text-sm bg-amber-100 text-amber-900 border border-amber-300';
+                feedback.innerText = '⚠️ Та бүх 5 тоог тоон шулууны нүднүүдэд гүйцэд байрлуулаарай!';
+                feedback.classList.remove('hidden');
+                return;
+            }
+
+            let isCorrect = true;
+            for (let i = 0; i < 5; i++) {
+                if (gameSelected[i] !== gameTargetOrder[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                feedback.className = 'mt-6 p-4 rounded-2xl text-center font-bold text-lg bg-emerald-100 text-emerald-900 border border-emerald-300';
+                feedback.innerText = `🎉 Баяр хүргэе! Тоон шулуун дээр ${orderMode === 'asc' ? 'ӨСӨХ' : 'БУУРАХ'} эрэмбээр зөв байрлууллаа!`;
+                confetti({
+                    particleCount: 90,
+                    spread: 70,
+                    origin: { y: 0.7 }
+                });
+            } else {
+                feedback.className = 'mt-6 p-4 rounded-2xl text-center font-bold text-lg bg-rose-100 text-rose-900 border border-rose-300';
+                feedback.innerText = '❌ Алдаа байна! Тоон шулуун дээрх мянгат ба зуутын заалтуудыг дахин нэг жишиж үзээрэй.';
+            }
+            feedback.classList.remove('hidden');
+        }
+
+        function showOrderHint() {
+            const hintBox = document.getElementById('game-hint-box');
+            let html = `<p class="font-bold mb-2 text-indigo-900 text-sm">💡 Тоонуудыг мянгат ба зуутын оронгоор салгаж харах:</p><div class="grid sm:grid-cols-2 gap-2">`;
+            
+            gameNumbers.forEach(num => {
+                const myang = Math.floor(num / 1000) * 1000;
+                const zuut = Math.floor((num % 1000) / 100) * 100;
+                const arav = num % 100;
+                html += `<div class="bg-white p-2 rounded-xl border border-amber-200">
+                    <strong class="text-indigo-700">${num.toLocaleString()}</strong> = ${myang} (Мянгат) + ${zuut} (Зуут) + ${arav}
+                </div>`;
+            });
+            html += `</div>`;
+            hintBox.innerHTML = html;
+            hintBox.classList.remove('hidden');
+        }
+
+        // --- QUIZ LOGIC ---
+        function initQuiz() {
+            quizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').innerText = `0 / 5`;
+
+            quizQuestions = [
+                {
+                    q: "Тоон шулуун дээр 3400 ба 3600-ын яг ГУВИНД (голд) ямар тоо байх вэ?",
+                    options: ["3450", "3500", "3550", "3600"],
+                    correct: 1,
+                    explain: "3400 ба 3600-ын chính дунд 3500 (зуутын заалт) байна."
+                },
+                {
+                    q: "Тоон шулуун дээр ЗҮҮНЭЭС БАРУУН ТИЙШ шилжихэд тооны утга хэрхэн өөрчлөгдөх вэ?",
+                    options: ["Багасна (Буурна)", "Ихэснэ (Өснө)", "Өөрчлөгдөхгүй", "Эхлээд багасна, дараа нь өснө"],
+                    correct: 1,
+                    explain: "Тоон шулууны баруун тийш чиглэл нь өсөх эрэмбийг заана."
+                },
+                {
+                    q: "4820 гэдэг тоо аль хоёр ЗУУТЫН хооронд байрлах вэ?",
+                    options: ["4000 ба 5000", "4800 ба 4900", "4820 ба 4830", "4700 ба 4800"],
+                    correct: 1,
+                    explain: "4820 нь 4800 ба 4900 гэсэн хоёр зуутын хооронд оршино."
+                },
+                {
+                    q: "Дараах тоонуудыг тоон шулуун дээр байрлуулбал хамгийн БАРУУН ТАЛД (хамгийн их) ямар тоо байх вэ? [ 5200, 5800, 5150, 5600 ]",
+                    options: ["5150", "5200", "5600", "5800"],
+                    correct: 3,
+                    explain: "Хамгийн их тоо 5800 нь тоон шулууны хамгийн баруун талд байрлана."
+                },
+                {
+                    q: "Тоонуудыг БУУРАХ ЭРЭМБЭЭР эрэмбэлэхийн тулд тоон шулууныг ямар чиглэлд унших вэ?",
+                    options: ["Зүүнээс баруун тийш", "Баруунаас зүүн тийш", "Гол хэсгээс хоёр тийш", "Дуртай чиглэлдээ"],
+                    correct: 1,
+                    explain: "Буурах эрэмбэ буюу ихээс бага руу жагсаахад баруунаас зүүн рүү уншина."
+                }
+            ];
+
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-body');
+
+            if (quizIndex >= quizQuestions.length) {
+                container.innerHTML = `
+                    <div class="text-center py-10 space-y-4">
+                        <div class="text-6xl">🏆</div>
+                        <h3 class="heading-font text-2xl font-bold text-slate-800">Сорилт амжилттай дууслаа!</h3>
+                        <p class="text-lg text-slate-600">Таны авсан оноо: <strong class="text-indigo-600 text-2xl">${quizScore} / ${quizQuestions.length}</strong></p>
+                        <button onclick="initQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg transition">
+                            🔄 Дахин сорих
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = quizQuestions[quizIndex];
+
+            let optionsHTML = q.options.map((opt, idx) => `
+                <button onclick="submitQuizAnswer(${idx})" class="w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition font-bold text-base text-slate-800 flex justify-between items-center">
+                    <span>${opt}</span>
+                    <i class="fa-regular fa-circle text-slate-300"></i>
+                </button>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400">Асуулт ${quizIndex + 1} / ${quizQuestions.length}</span>
+                        <span class="text-xs font-extrabold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Тоон шулуун</span>
+                    </div>
+
+                    <p class="text-base md:text-lg font-bold text-slate-800">
+                        ${q.q}
+                    </p>
+
+                    <div class="space-y-3 pt-2">
+                        ${optionsHTML}
+                    </div>
+
+                    <div id="quiz-feedback" class="hidden p-4 rounded-2xl font-bold text-center text-sm"></div>
+                </div>
+            `;
+        }
+
+        function submitQuizAnswer(selectedIdx) {
+            const q = quizQuestions[quizIndex];
+            const isCorrect = selectedIdx === q.correct;
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (isCorrect) {
+                quizScore++;
+                document.getElementById('quiz-score').innerText = `${quizScore} / ${quizQuestions.length}`;
+                feedback.className = 'p-4 rounded-2xl font-bold text-center bg-emerald-100 text-emerald-900 border border-emerald-300';
+                feedback.innerText = `✨ Зөв байна! (${q.explain})`;
+            } else {
+                feedback.className = 'p-4 rounded-2xl font-bold text-center bg-rose-100 text-rose-900 border border-rose-300';
+                feedback.innerText = `❌ Буруу байна! Зөв хариулт: ${q.options[q.correct]}. (${q.explain})`;
+            }
+
+            feedback.classList.remove('hidden');
+
+            setTimeout(() => {
+                quizIndex++;
+                renderQuiz();
+            }, 2000);
+        }
+
+        // Initialize default view on load
+        window.onload = function() {
+            switchTab('plan');
+            window.addEventListener('resize', () => {
+                if (currentTab === 'lab') drawLabCanvas();
+                if (currentTab === 'ordering') drawGameCanvas();
+            });
+        };
+    </script>
+</body>
+</html>
